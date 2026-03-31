@@ -1,0 +1,646 @@
+{
+  "name": "Finance Tracker",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ceb1f72d-69b5-4dd1-b1cc-98d4ff4e428a",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -640,
+        192
+      ],
+      "id": "ef192abd-69b3-467e-bc8d-c8b1488483eb",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -400,
+        16
+      ],
+      "id": "9d638601-9e87-4b3e-a2f1-09d44e224f99",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "HKPyhgdaRIyl2HhS",
+          "name": "Finance Tracker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json.output;\n\n// Extract JSON from response (handles markdown code blocks too)\nlet jsonStr = response;\nif (response.includes('```')) {\n  jsonStr = response.match(/```(?:json)?\\s*([\\s\\S]*?)```/)?.[1] || response;\n}\n\nconst data = JSON.parse(jsonStr.trim());\n\nreturn {\n  type: data.type,\n  amount: parseFloat(data.amount),\n  category: data.category,\n  description: data.description,\n  date: data.date,\n  account: data.account\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        80
+      ],
+      "id": "f7184609-3c90-4ea0-b97a-b7842436612e",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1kX1NvwsTDGELuwC09VCIKEjqSrePNEkf3dGeHj1h45w/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1880003258,
+          "mode": "list",
+          "cachedResultName": "Credit card",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kX1NvwsTDGELuwC09VCIKEjqSrePNEkf3dGeHj1h45w/edit#gid=1880003258"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $json.date }}",
+            "Amount": "={{ $json.amount }}",
+            "Type": "={{ $json.type }}",
+            "Category": "={{ $json.category }}",
+            "Description": "={{ $json.description }}",
+            "account": "={{ $json.account }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Type",
+              "displayName": "Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Amount",
+              "displayName": "Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "account",
+              "displayName": "account",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        880,
+        -112
+      ],
+      "id": "037883b8-32a7-4276-b7b4-e91a3be20de2",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zPTmWUlcXVDkUXjW",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentType": "image_url",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mistralAi",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        288
+      ],
+      "id": "864c1f99-7242-45db-a1b5-6f452999e642",
+      "name": "Extract text",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "jDCTMqi6DfHqYzeV",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -48,
+        480
+      ],
+      "id": "aa4267be-ceb8-4bbe-b7b9-8fe67f377657",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "HKPyhgdaRIyl2HhS",
+          "name": "Finance Tracker"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        272,
+        80
+      ],
+      "id": "974ae319-2c27-4b44-bc3f-ede1927faaf2",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -848,
+        192
+      ],
+      "id": "5566d29f-9d5a-47a9-8c2b-3b99612771e0",
+      "name": "Finance_Tracker_Trigger",
+      "webhookId": "cff73704-cd81-4153-beb4-f4b175244dec",
+      "credentials": {
+        "telegramApi": {
+          "id": "jqx1Npb855z4c4yA",
+          "name": "Finance_Tracker_AI_BOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "=You are an expense tracking assistant. Extract financial information from user messages.\n\nReturn ONLY a valid JSON object with these exact fields:\n\n{\n  \"type\": \"Expense\" or \"Income\",\n  \"amount\": number only (no currency symbols),\n  \"category\": \"Food | Transport | Shopping | Bills | Entertainment | Health | Travel | Salary | Freelance | Other\",\n  \"description\": \"Brief 3-5 word description\",\n  \"date\": \"YYYY-MM-DD\",\n  \"account\": \"bank account\" or \"credit card\"\n}\n\nDETECTION RULES:\n- Words like spent, paid, bought, ordered, ate, purchased, bill = Expense\n- Words like received, earned, got, salary, credited, income = Income\n\nCATEGORY RULES:\n- Food items (Maggi, pizza, dinner, lunch, coffee, restaurant, zomato, swiggy) = Food\n- Cab, auto, uber, ola, petrol, metro, bus, parking = Transport\n- Clothes, shoes, electronics, amazon, flipkart, gadgets = Shopping\n- Electricity, wifi, recharge, rent, water, gas = Bills\n- Movie, netflix, game, concert, party = Entertainment\n- Medicine, doctor, hospital, pharmacy = Health\n- Hotel, flight, train ticket, trip = Travel\n\nDATE RULES:\n- If date mentioned (like \"26th December\" or \"yesterday\") → Convert to YYYY-MM-DD\n- Today's date: 2025-12-26\n- \"yesterday\" = 2025-12-25\n- No date mentioned = Use today's date\n\nOUTPUT ONLY THE JSON. No explanations. No markdown. No backticks."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -400,
+        -144
+      ],
+      "id": "7f840e66-1d4a-46f0-8b87-df5885653c23",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Finance_Tracker_Trigger').item.json.message.chat.id }}",
+        "text": "=✅ {{ $json.Type }} Locked!    \n\n💰 {{ $json.Amount }} → {{ $json.Category }}  \n📝 {{ $json.Description }}  \n📅 {{ $json.Date }}\n$ {{ $json.account }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1200,
+        64
+      ],
+      "id": "760d84c4-dbae-44b0-9ff8-f9845308e875",
+      "name": "Send a text message",
+      "webhookId": "bf6ae6e3-fb8a-4fb7-a3e5-21e1a00c8ed9",
+      "credentials": {
+        "telegramApi": {
+          "id": "jqx1Npb855z4c4yA",
+          "name": "Finance_Tracker_AI_BOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.photo[0].file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -432,
+        288
+      ],
+      "id": "25622a34-ceba-4542-b54b-314649d4dffc",
+      "name": "Get a file",
+      "webhookId": "535cd297-7b22-42e6-8411-ba2ee2251c05",
+      "credentials": {
+        "telegramApi": {
+          "id": "jqx1Npb855z4c4yA",
+          "name": "Finance_Tracker_AI_BOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.pages[0].markdown }}",
+        "options": {
+          "systemMessage": "=You are an expense tracking assistant. Extract financial information from receipts or text messages.\n\nCRITICAL: Return ONLY a raw JSON object. No markdown, no backticks, no explanations, no text before or after.\n\n{\n  \"type\": \"Expense or Income\",\n  \"amount\": number,\n  \"category\": \"Food | Transport | Shopping | Bills | Entertainment | Health | Travel | Salary | Freelance | Other\",\n  \"description\": \"Brief description\",\n  \"date\": \"YYYY-MM-DD\"\n}\n\nTYPE RULES:\n- spent/paid/bought/bill/ordered/ate = Expense\n- received/earned/salary/credited/got paid = Income\n\n⚠️ AMOUNT EXTRACTION – READ CAREFULLY:\n- FIND the line that says \"Total:\" and use THAT number\n- The Total on this receipt is ₹541.92 (Subtotal ₹459.24 + CGST ₹41.34 + SGST ₹41.34)\n- ₹500 is NOT the expense – it's how much cash the customer handed over\n- ₹132.50 is NOT the expense – it's the change returned\n- CORRECT amount = Total/Grand Total (after taxes)\n- WRONG amount = Cash/Tendered/Paid amount\n\nRECEIPT MATH CHECK:\nIf you see: Total = X, Cash = Y, Change = Z\nThen: Amount = X (NOT Y, NOT Z)\nVerify: Y - X = Z (Cash minus Total equals Change)\n\nCATEGORY RULES:\n- Food items, restaurants, cafes, dhabas, zomato, swiggy = Food\n- Uber, ola, petrol, metro, auto, parking = Transport\n- Amazon, flipkart, clothes, electronics = Shopping\n- Electricity, wifi, recharge, rent = Bills\n- Movies, netflix, games, concerts = Entertainment\n- Medicine, doctor, hospital = Health\n- Hotels, flights, trains = Travel\n\nDATE RULES:\n- If date mentioned on receipt = Convert to YYYY-MM-DD\n- No date mentioned = use today's date\n\nONLY output the JSON object, nothing else."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -48,
+        272
+      ],
+      "id": "f5d4cbe4-8825-4fe7-8804-666f07a2de7e",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "523dfc14-ce60-4f15-930a-687dc348de4a",
+              "leftValue": "={{ $json.account }}",
+              "rightValue": "credit card",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        656,
+        80
+      ],
+      "id": "307b285e-99cf-4f88-a2e9-41f0e8cab086",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1kX1NvwsTDGELuwC09VCIKEjqSrePNEkf3dGeHj1h45w/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Bank Account",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kX1NvwsTDGELuwC09VCIKEjqSrePNEkf3dGeHj1h45w/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $json.date }}",
+            "Amount": "={{ $json.amount }}",
+            "Type": "={{ $json.type }}",
+            "Category": "={{ $json.category }}",
+            "Description": "={{ $json.description }}",
+            "account": "={{ $json.account }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Type",
+              "displayName": "Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Amount",
+              "displayName": "Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "account",
+              "displayName": "account",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        896,
+        208
+      ],
+      "id": "eabd5d12-2b6d-496e-8421-316e6fe5ebd5",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zPTmWUlcXVDkUXjW",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract text": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finance_Tracker_Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Extract text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d809bb2f-643f-422e-916f-238431909f5a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "810263f1b19990c459a38d2b296eddff73b3b3dd7750c2e4db0489d5573686a3"
+  },
+  "id": "cDwL9hRx7QpfAici",
+  "tags": []
+}
